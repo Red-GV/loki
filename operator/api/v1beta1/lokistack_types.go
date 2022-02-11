@@ -517,14 +517,6 @@ type AutoscalingSpec struct {
 type AutoscalingTemplateSpec struct {
 
 	// IngestionAutoscaling defines the autoscaling configuration applied
-	// to the gateway.
-	//
-	// +optional
-	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="GatewayAutoscaling"
-	GatewayAutoscaling *AutoscalingSpec `json:"gatewayAutoscaling,omitempty"`
-
-	// IngestionAutoscaling defines the autoscaling configuration applied
 	// to the ingestion path.
 	//
 	// +optional

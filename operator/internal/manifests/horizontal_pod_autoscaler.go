@@ -31,37 +31,15 @@ type autoscalerBuilder struct {
 func BuildHorizontalPodAutoscalers(opts Options) []client.Object {
 	objects := []client.Object{}
 
-	if opts.Stack.Autoscaling.GatewayAutoscaling.HorizontalAutoscaling != nil && opts.Flags.EnableGateway {
-		objects = append(objects, NewGatewayHorizontalPodAutoscaler(opts))
-	}
-
 	if opts.Stack.Autoscaling.IngestionAutoscaling.HorizontalAutoscaling != nil {
-		objects = append(objects, NewDistributorHorizontalPodAutoscaler(opts))
 		objects = append(objects, NewIngesterHorizontalPodAutoscaler(opts))
 	}
 
 	if opts.Stack.Autoscaling.QueryAutoscaling.HorizontalAutoscaling != nil {
-		objects = append(objects, NewQueryFrontendHorizontalPodAutoscaler(opts))
 		objects = append(objects, NewQuerierHorizontalPodAutoscaler(opts))
-		objects = append(objects, NewIndexGatewayHorizontalPodAutoscaler(opts))
 	}
 
 	return objects
-}
-
-// NewDistributorHorizontalPodAutoscaler creates a k8s autoscaler for the distributor deployment
-func NewDistributorHorizontalPodAutoscaler(opts Options) *autoscalingv2beta2.HorizontalPodAutoscaler {
-	b := autoscalerBuilder{
-		name:      horizontalAutoscalerName(LabelDistributorComponent),
-		namespace: opts.Namespace,
-		labelSet:  ComponentLabels(LabelDistributorComponent, opts.Name),
-		objectRef: newDeploymentCrossVersionObjectReference(DistributorName(opts.Name)),
-		min:       internal.StackSizeTable[smallestSize].Template.Distributor.Replicas,
-		max:       internal.StackSizeTable[largestSize].Template.Distributor.Replicas,
-		config:    opts.Stack.Autoscaling.IngestionAutoscaling.HorizontalAutoscaling,
-	}
-
-	return newHorizontalPodAutoscaler(b)
 }
 
 // NewQuerierHorizontalPodAutoscaler creates a k8s autoscaler for the querier deployment
@@ -79,36 +57,6 @@ func NewQuerierHorizontalPodAutoscaler(opts Options) *autoscalingv2beta2.Horizon
 	return newHorizontalPodAutoscaler(b)
 }
 
-// NewQueryFrontendHorizontalPodAutoscaler creates a k8s autoscaler for the querier frontend deployment
-func NewQueryFrontendHorizontalPodAutoscaler(opts Options) *autoscalingv2beta2.HorizontalPodAutoscaler {
-	b := autoscalerBuilder{
-		name:      horizontalAutoscalerName(LabelQueryFrontendComponent),
-		namespace: opts.Namespace,
-		labelSet:  ComponentLabels(LabelQueryFrontendComponent, opts.Name),
-		objectRef: newDeploymentCrossVersionObjectReference(QueryFrontendName(opts.Name)),
-		min:       internal.StackSizeTable[smallestSize].Template.QueryFrontend.Replicas,
-		max:       internal.StackSizeTable[largestSize].Template.QueryFrontend.Replicas,
-		config:    opts.Stack.Autoscaling.QueryAutoscaling.HorizontalAutoscaling,
-	}
-
-	return newHorizontalPodAutoscaler(b)
-}
-
-// NewGatewayHorizontalPodAutoscaler creates a k8s autoscaler for the gateway deployment
-func NewGatewayHorizontalPodAutoscaler(opts Options) *autoscalingv2beta2.HorizontalPodAutoscaler {
-	b := autoscalerBuilder{
-		name:      horizontalAutoscalerName(LabelGatewayComponent),
-		namespace: opts.Namespace,
-		labelSet:  ComponentLabels(LabelGatewayComponent, opts.Name),
-		objectRef: newDeploymentCrossVersionObjectReference(GatewayName(opts.Name)),
-		min:       internal.StackSizeTable[smallestSize].Template.Gateway.Replicas,
-		max:       internal.StackSizeTable[largestSize].Template.Gateway.Replicas,
-		config:    opts.Stack.Autoscaling.GatewayAutoscaling.HorizontalAutoscaling,
-	}
-
-	return newHorizontalPodAutoscaler(b)
-}
-
 // NewIngesterHorizontalPodAutoscaler creates a k8s autoscaler for the ingester stateful set
 func NewIngesterHorizontalPodAutoscaler(opts Options) *autoscalingv2beta2.HorizontalPodAutoscaler {
 	b := autoscalerBuilder{
@@ -119,21 +67,6 @@ func NewIngesterHorizontalPodAutoscaler(opts Options) *autoscalingv2beta2.Horizo
 		min:       internal.StackSizeTable[smallestSize].Template.Ingester.Replicas,
 		max:       internal.StackSizeTable[largestSize].Template.Ingester.Replicas,
 		config:    opts.Stack.Autoscaling.IngestionAutoscaling.HorizontalAutoscaling,
-	}
-
-	return newHorizontalPodAutoscaler(b)
-}
-
-// NewIndexGatewayHorizontalPodAutoscaler creates a k8s autoscaler for the index gateway stateful set
-func NewIndexGatewayHorizontalPodAutoscaler(opts Options) *autoscalingv2beta2.HorizontalPodAutoscaler {
-	b := autoscalerBuilder{
-		name:      horizontalAutoscalerName(LabelIndexGatewayComponent),
-		namespace: opts.Namespace,
-		labelSet:  ComponentLabels(LabelIndexGatewayComponent, opts.Name),
-		objectRef: newStatefulSetCrossVersionObjectReference(IndexGatewayName(opts.Name)),
-		min:       internal.StackSizeTable[smallestSize].Template.IndexGateway.Replicas,
-		max:       internal.StackSizeTable[largestSize].Template.IndexGateway.Replicas,
-		config:    opts.Stack.Autoscaling.QueryAutoscaling.HorizontalAutoscaling,
 	}
 
 	return newHorizontalPodAutoscaler(b)
@@ -205,7 +138,7 @@ func newHorizontalPodAutoscaler(b autoscalerBuilder) *autoscalingv2beta2.Horizon
 						Name: corev1.ResourceMemory,
 						Target: autoscalingv2beta2.MetricTarget{
 							Type:               autoscalingv2beta2.UtilizationMetricType,
-							AverageUtilization: pointer.Int32Ptr(80),
+							AverageUtilization: pointer.Int32Ptr(70),
 						},
 					},
 				},

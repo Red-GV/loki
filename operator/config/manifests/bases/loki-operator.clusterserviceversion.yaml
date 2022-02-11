@@ -70,26 +70,6 @@ spec:
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:advanced
       - description: IngestionAutoscaling defines the autoscaling configuration applied
-          to the gateway.
-        displayName: GatewayAutoscaling
-        path: autoscaling.gatewayAutoscaling
-      - description: HorizontalAutoscaling defines the autoscaling configuration applied
-          to automatically change the number of pods deployed.
-        displayName: HorizontalAutoscaling
-        path: autoscaling.gatewayAutoscaling.horizontalAutoscaling
-      - description: ScaleDownPercentage defines the percentage of running pods to
-          add to the cluster for the scale down behavior.
-        displayName: ScaleDownPercentage
-        path: autoscaling.gatewayAutoscaling.horizontalAutoscaling.scaleDownPercentage
-        x-descriptors:
-        - urn:alm:descriptor:com.tectonic.ui:number
-      - description: ScaleUpPercentage defines the percentage of running pods to add
-          to the cluster for the scale up behavior.
-        displayName: ScaleUpPercentage
-        path: autoscaling.gatewayAutoscaling.horizontalAutoscaling.scaleUpPercentage
-        x-descriptors:
-        - urn:alm:descriptor:com.tectonic.ui:number
-      - description: IngestionAutoscaling defines the autoscaling configuration applied
           to the ingestion path.
         displayName: IngestionAutoscaling
         path: autoscaling.ingestionAutoscaling

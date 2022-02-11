@@ -58,6 +58,7 @@ ingester:
   max_transfer_retries: 0
   wal:
     enabled: true
+    flush_on_shutdown: true
     dir: /tmp/wal
     replay_memory_ceiling: 2500
 ingester_client:
@@ -277,6 +278,7 @@ ingester:
   max_transfer_retries: 0
   wal:
     enabled: true
+    flush_on_shutdown: true
     dir: /tmp/wal
     replay_memory_ceiling: 2500
 ingester_client:

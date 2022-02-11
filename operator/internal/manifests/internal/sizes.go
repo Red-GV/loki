@@ -241,12 +241,6 @@ var StackSizeTable = map[lokiv1beta1.LokiStackSizeType]lokiv1beta1.LokiStackSpec
 					ScaleDownPercentage: 100,
 				},
 			},
-			GatewayAutoscaling: &lokiv1beta1.AutoscalingSpec{
-				HorizontalAutoscaling: &lokiv1beta1.HorizontalAutoscalingSpec{
-					ScaleUpPercentage:   1,
-					ScaleDownPercentage: 1,
-				},
-			},
 		},
 	},
 
@@ -310,12 +304,6 @@ var StackSizeTable = map[lokiv1beta1.LokiStackSizeType]lokiv1beta1.LokiStackSpec
 					ScaleDownPercentage: 50,
 				},
 			},
-			GatewayAutoscaling: &lokiv1beta1.AutoscalingSpec{
-				HorizontalAutoscaling: &lokiv1beta1.HorizontalAutoscalingSpec{
-					ScaleUpPercentage:   1,
-					ScaleDownPercentage: 1,
-				},
-			},
 		},
 	},
 
@@ -377,12 +365,6 @@ var StackSizeTable = map[lokiv1beta1.LokiStackSizeType]lokiv1beta1.LokiStackSpec
 				HorizontalAutoscaling: &lokiv1beta1.HorizontalAutoscalingSpec{
 					ScaleUpPercentage:   100,
 					ScaleDownPercentage: 50,
-				},
-			},
-			GatewayAutoscaling: &lokiv1beta1.AutoscalingSpec{
-				HorizontalAutoscaling: &lokiv1beta1.HorizontalAutoscalingSpec{
-					ScaleUpPercentage:   1,
-					ScaleDownPercentage: 1,
 				},
 			},
 		},

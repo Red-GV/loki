@@ -76,6 +76,7 @@ ingester:
   max_transfer_retries: 0
   wal:
     enabled: true
+    flush_on_shutdown: true
     dir: {{ .WriteAheadLog.Directory }}
     replay_memory_ceiling: {{ .WriteAheadLog.ReplayMemoryCeiling }}
 ingester_client:
