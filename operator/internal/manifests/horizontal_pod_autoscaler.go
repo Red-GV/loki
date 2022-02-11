@@ -1,6 +1,7 @@
 package manifests
 
 import (
+	corev1 "k8s.io/api/core/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -42,7 +43,7 @@ func NewIngesterHorizontalPodAutoscaler(opts Options) *autoscalingv2beta2.Horizo
 				ScaleDown: &autoscalingv2beta2.HPAScalingRules{
 					Policies: []autoscalingv2beta2.HPAScalingPolicy{
 						{
-							Type:          "Percent",
+							Type:          autoscalingv2beta2.PercentScalingPolicy,
 							Value:         20,
 							PeriodSeconds: 60,
 						},
@@ -52,12 +53,12 @@ func NewIngesterHorizontalPodAutoscaler(opts Options) *autoscalingv2beta2.Horizo
 				ScaleUp: &autoscalingv2beta2.HPAScalingRules{
 					Policies: []autoscalingv2beta2.HPAScalingPolicy{
 						{
-							Type:          "Percent",
+							Type:          autoscalingv2beta2.PercentScalingPolicy,
 							Value:         100,
 							PeriodSeconds: 15,
 						},
 						{
-							Type:          "Pods",
+							Type:          autoscalingv2beta2.PodScalingPolicy,
 							Value:         4,
 							PeriodSeconds: 15,
 						},
@@ -68,11 +69,11 @@ func NewIngesterHorizontalPodAutoscaler(opts Options) *autoscalingv2beta2.Horizo
 			},
 			Metrics: []autoscalingv2beta2.MetricSpec{
 				{
-					Type: "Resource",
+					Type: autoscalingv2beta2.ResourceMetricSourceType,
 					Resource: &autoscalingv2beta2.ResourceMetricSource{
-						Name: "Memory",
+						Name: corev1.ResourceMemory,
 						Target: autoscalingv2beta2.MetricTarget{
-							Type:               "Utilization",
+							Type:               autoscalingv2beta2.UtilizationMetricType,
 							AverageUtilization: pointer.Int32Ptr(80),
 						},
 					},
@@ -108,7 +109,7 @@ func NewQuerierHorizontalPodAutoscaler(opts Options) *autoscalingv2beta2.Horizon
 				ScaleDown: &autoscalingv2beta2.HPAScalingRules{
 					Policies: []autoscalingv2beta2.HPAScalingPolicy{
 						{
-							Type:          "Percent",
+							Type:          autoscalingv2beta2.PercentScalingPolicy,
 							Value:         20,
 							PeriodSeconds: 60,
 						},
@@ -118,12 +119,12 @@ func NewQuerierHorizontalPodAutoscaler(opts Options) *autoscalingv2beta2.Horizon
 				ScaleUp: &autoscalingv2beta2.HPAScalingRules{
 					Policies: []autoscalingv2beta2.HPAScalingPolicy{
 						{
-							Type:          "Percent",
+							Type:          autoscalingv2beta2.PercentScalingPolicy,
 							Value:         100,
 							PeriodSeconds: 15,
 						},
 						{
-							Type:          "Pods",
+							Type:          autoscalingv2beta2.PodScalingPolicy,
 							Value:         4,
 							PeriodSeconds: 15,
 						},
@@ -134,11 +135,11 @@ func NewQuerierHorizontalPodAutoscaler(opts Options) *autoscalingv2beta2.Horizon
 			},
 			Metrics: []autoscalingv2beta2.MetricSpec{
 				{
-					Type: "Resource",
+					Type: autoscalingv2beta2.ResourceMetricSourceType,
 					Resource: &autoscalingv2beta2.ResourceMetricSource{
-						Name: "Memory",
+						Name: corev1.ResourceMemory,
 						Target: autoscalingv2beta2.MetricTarget{
-							Type:               "Utilization",
+							Type:               autoscalingv2beta2.UtilizationMetricType,
 							AverageUtilization: pointer.Int32Ptr(80),
 						},
 					},

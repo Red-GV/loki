@@ -961,7 +961,7 @@ func TestGetMutateFunc_MutateHorizontalPodAutoscalerSpec(t *testing.T) {
 				ScaleDown: &autoscalingv2beta2.HPAScalingRules{
 					Policies: []autoscalingv2beta2.HPAScalingPolicy{
 						{
-							Type:          "Percent",
+							Type:          autoscalingv2beta2.PercentScalingPolicy,
 							Value:         20,
 							PeriodSeconds: 60,
 						},
@@ -971,12 +971,12 @@ func TestGetMutateFunc_MutateHorizontalPodAutoscalerSpec(t *testing.T) {
 				ScaleUp: &autoscalingv2beta2.HPAScalingRules{
 					Policies: []autoscalingv2beta2.HPAScalingPolicy{
 						{
-							Type:          "Percent",
+							Type:          autoscalingv2beta2.PercentScalingPolicy,
 							Value:         100,
 							PeriodSeconds: 15,
 						},
 						{
-							Type:          "Pods",
+							Type:          autoscalingv2beta2.PodScalingPolicy,
 							Value:         4,
 							PeriodSeconds: 15,
 						},
@@ -987,11 +987,11 @@ func TestGetMutateFunc_MutateHorizontalPodAutoscalerSpec(t *testing.T) {
 			},
 			Metrics: []autoscalingv2beta2.MetricSpec{
 				{
-					Type: "Resource",
+					Type: autoscalingv2beta2.ResourceMetricSourceType,
 					Resource: &autoscalingv2beta2.ResourceMetricSource{
-						Name: "Memory",
+						Name: corev1.ResourceMemory,
 						Target: autoscalingv2beta2.MetricTarget{
-							Type:               "Utilization",
+							Type:               autoscalingv2beta2.UtilizationMetricType,
 							AverageUtilization: pointer.Int32Ptr(80),
 						},
 					},
@@ -1018,7 +1018,7 @@ func TestGetMutateFunc_MutateHorizontalPodAutoscalerSpec(t *testing.T) {
 				ScaleDown: &autoscalingv2beta2.HPAScalingRules{
 					Policies: []autoscalingv2beta2.HPAScalingPolicy{
 						{
-							Type:          "Percent",
+							Type:          autoscalingv2beta2.PercentScalingPolicy,
 							Value:         20,
 							PeriodSeconds: 60,
 						},
@@ -1028,12 +1028,12 @@ func TestGetMutateFunc_MutateHorizontalPodAutoscalerSpec(t *testing.T) {
 				ScaleUp: &autoscalingv2beta2.HPAScalingRules{
 					Policies: []autoscalingv2beta2.HPAScalingPolicy{
 						{
-							Type:          "Percent",
+							Type:          autoscalingv2beta2.PercentScalingPolicy,
 							Value:         100,
 							PeriodSeconds: 15,
 						},
 						{
-							Type:          "Pods",
+							Type:          autoscalingv2beta2.PodScalingPolicy,
 							Value:         4,
 							PeriodSeconds: 15,
 						},
@@ -1044,11 +1044,11 @@ func TestGetMutateFunc_MutateHorizontalPodAutoscalerSpec(t *testing.T) {
 			},
 			Metrics: []autoscalingv2beta2.MetricSpec{
 				{
-					Type: "Resource",
+					Type: autoscalingv2beta2.ResourceMetricSourceType,
 					Resource: &autoscalingv2beta2.ResourceMetricSource{
-						Name: "Memory",
+						Name: corev1.ResourceMemory,
 						Target: autoscalingv2beta2.MetricTarget{
-							Type:               "Utilization",
+							Type:               autoscalingv2beta2.UtilizationMetricType,
 							AverageUtilization: pointer.Int32Ptr(80),
 						},
 					},
