@@ -229,7 +229,7 @@ type TenantsSpec struct {
 }
 
 // LokiComponentSpec defines the requirements to configure scheduling
-// of each loki component individually.
+// of each Loki component individually.
 type LokiComponentSpec struct {
 	// Replicas defines the number of replica pods of the component.
 	//
@@ -475,6 +475,72 @@ type LimitsSpec struct {
 	Tenants map[string]LimitsTemplateSpec `json:"tenants,omitempty"`
 }
 
+// HorizontalAutoscalingSpec defines the requirements to configure
+// the Horizontal Pod Autoscaler for each Loki component individually.
+type HorizontalAutoscalingSpec struct {
+
+	// ScaleUpPercentage defines the percentage of running pods to add to
+	// the cluster for the scale up behavior.
+	//
+	// +required
+	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:Minimum:=0
+	// +kubebuilder:validation:Maximum:=100
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,xDescriptors="urn:alm:descriptor:com.tectonic.ui:number",displayName="ScaleUpPercentage"
+	ScaleUpPercentage int32 `json:"scaleUpPercentage"`
+
+	// ScaleDownPercentage defines the percentage of running pods to add to
+	// the cluster for the scale down behavior.
+	//
+	// +required
+	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:Minimum:=0
+	// +kubebuilder:validation:Maximum:=100
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,xDescriptors="urn:alm:descriptor:com.tectonic.ui:number",displayName="ScaleDownPercentage"
+	ScaleDownPercentage int32 `json:"scaleDownPercentage"`
+}
+
+// AutoscalingSpec defines the spec for different types of autoscaling.
+type AutoscalingSpec struct {
+
+	// HorizontalAutoscaling defines the autoscaling configuration applied
+	// to automatically change the number of pods deployed.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="HorizontalAutoscaling"
+	HorizontalAutoscaling *HorizontalAutoscalingSpec `json:"horizontalAutoscaling,omitempty"`
+}
+
+// AutoscalingTemplateSpec defines the spec for autoscaling configuration
+// applied at ingestion or query path across the cluster.
+type AutoscalingTemplateSpec struct {
+
+	// IngestionAutoscaling defines the autoscaling configuration applied
+	// to the gateway.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="GatewayAutoscaling"
+	GatewayAutoscaling *AutoscalingSpec `json:"gatewayAutoscaling,omitempty"`
+
+	// IngestionAutoscaling defines the autoscaling configuration applied
+	// to the ingestion path.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="IngestionAutoscaling"
+	IngestionAutoscaling *AutoscalingSpec `json:"ingestionAutoscaling,omitempty"`
+
+	// QueryAutoscaling defines the autoscaling configuration applied
+	// to the query path.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="QueryAutoscaling"
+	QueryAutoscaling *AutoscalingSpec `json:"queryAutoscaling,omitempty"`
+}
+
 // LokiStackSpec defines the desired state of LokiStack
 type LokiStackSpec struct {
 
@@ -536,6 +602,13 @@ type LokiStackSpec struct {
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Tenants Configuration"
 	Tenants *TenantsSpec `json:"tenants,omitempty"`
+
+	// Autoscaling defines the autoscaling configurations to apply per log path.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,xDescriptors="urn:alm:descriptor:com.tectonic.ui:advanced",displayName="Autoscaling"
+	Autoscaling *AutoscalingTemplateSpec `json:"autoscaling,omitempty"`
 }
 
 // LokiStackConditionType deifnes the type of condition types of a Loki deployment.

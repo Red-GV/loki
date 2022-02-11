@@ -1,6 +1,8 @@
 package manifests
 
 import (
+	lokiv1beta1 "github.com/grafana/loki/operator/api/v1beta1"
+	"github.com/grafana/loki/operator/internal/manifests/internal"
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
 	corev1 "k8s.io/api/core/v1"
@@ -10,62 +12,174 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+const (
+	smallestSize = lokiv1beta1.SizeOneXSmall
+	largestSize  = lokiv1beta1.SizeOneXMedium
+)
+
+type autoscalerBuilder struct {
+	name      string
+	namespace string
+	labelSet  labels.Set
+	objectRef autoscalingv2beta2.CrossVersionObjectReference
+	min       int32
+	max       int32
+	config    *lokiv1beta1.HorizontalAutoscalingSpec
+}
+
 // BuildHorizontalPodAutoscalers builds the horizontal pod autoscalers
 func BuildHorizontalPodAutoscalers(opts Options) []client.Object {
-	return []client.Object{
-		NewIngesterHorizontalPodAutoscaler(opts),
-		NewQuerierHorizontalPodAutoscaler(opts),
+	objects := []client.Object{}
+
+	if opts.Stack.Autoscaling.GatewayAutoscaling.HorizontalAutoscaling != nil && opts.Flags.EnableGateway {
+		objects = append(objects, NewGatewayHorizontalPodAutoscaler(opts))
 	}
+
+	if opts.Stack.Autoscaling.IngestionAutoscaling.HorizontalAutoscaling != nil {
+		objects = append(objects, NewDistributorHorizontalPodAutoscaler(opts))
+		objects = append(objects, NewIngesterHorizontalPodAutoscaler(opts))
+	}
+
+	if opts.Stack.Autoscaling.QueryAutoscaling.HorizontalAutoscaling != nil {
+		objects = append(objects, NewQueryFrontendHorizontalPodAutoscaler(opts))
+		objects = append(objects, NewQuerierHorizontalPodAutoscaler(opts))
+		objects = append(objects, NewIndexGatewayHorizontalPodAutoscaler(opts))
+	}
+
+	return objects
+}
+
+// NewDistributorHorizontalPodAutoscaler creates a k8s autoscaler for the distributor deployment
+func NewDistributorHorizontalPodAutoscaler(opts Options) *autoscalingv2beta2.HorizontalPodAutoscaler {
+	b := autoscalerBuilder{
+		name:      horizontalAutoscalerName(LabelDistributorComponent),
+		namespace: opts.Namespace,
+		labelSet:  ComponentLabels(LabelDistributorComponent, opts.Name),
+		objectRef: newDeploymentCrossVersionObjectReference(DistributorName(opts.Name)),
+		min:       internal.StackSizeTable[smallestSize].Template.Distributor.Replicas,
+		max:       internal.StackSizeTable[largestSize].Template.Distributor.Replicas,
+		config:    opts.Stack.Autoscaling.IngestionAutoscaling.HorizontalAutoscaling,
+	}
+
+	return newHorizontalPodAutoscaler(b)
+}
+
+// NewQuerierHorizontalPodAutoscaler creates a k8s autoscaler for the querier deployment
+func NewQuerierHorizontalPodAutoscaler(opts Options) *autoscalingv2beta2.HorizontalPodAutoscaler {
+	b := autoscalerBuilder{
+		name:      horizontalAutoscalerName(LabelQuerierComponent),
+		namespace: opts.Namespace,
+		labelSet:  ComponentLabels(LabelQuerierComponent, opts.Name),
+		objectRef: newDeploymentCrossVersionObjectReference(QuerierName(opts.Name)),
+		min:       internal.StackSizeTable[smallestSize].Template.Querier.Replicas,
+		max:       internal.StackSizeTable[largestSize].Template.Querier.Replicas,
+		config:    opts.Stack.Autoscaling.QueryAutoscaling.HorizontalAutoscaling,
+	}
+
+	return newHorizontalPodAutoscaler(b)
+}
+
+// NewQueryFrontendHorizontalPodAutoscaler creates a k8s autoscaler for the querier frontend deployment
+func NewQueryFrontendHorizontalPodAutoscaler(opts Options) *autoscalingv2beta2.HorizontalPodAutoscaler {
+	b := autoscalerBuilder{
+		name:      horizontalAutoscalerName(LabelQueryFrontendComponent),
+		namespace: opts.Namespace,
+		labelSet:  ComponentLabels(LabelQueryFrontendComponent, opts.Name),
+		objectRef: newDeploymentCrossVersionObjectReference(QueryFrontendName(opts.Name)),
+		min:       internal.StackSizeTable[smallestSize].Template.QueryFrontend.Replicas,
+		max:       internal.StackSizeTable[largestSize].Template.QueryFrontend.Replicas,
+		config:    opts.Stack.Autoscaling.QueryAutoscaling.HorizontalAutoscaling,
+	}
+
+	return newHorizontalPodAutoscaler(b)
+}
+
+// NewGatewayHorizontalPodAutoscaler creates a k8s autoscaler for the gateway deployment
+func NewGatewayHorizontalPodAutoscaler(opts Options) *autoscalingv2beta2.HorizontalPodAutoscaler {
+	b := autoscalerBuilder{
+		name:      horizontalAutoscalerName(LabelGatewayComponent),
+		namespace: opts.Namespace,
+		labelSet:  ComponentLabels(LabelGatewayComponent, opts.Name),
+		objectRef: newDeploymentCrossVersionObjectReference(GatewayName(opts.Name)),
+		min:       internal.StackSizeTable[smallestSize].Template.Gateway.Replicas,
+		max:       internal.StackSizeTable[largestSize].Template.Gateway.Replicas,
+		config:    opts.Stack.Autoscaling.GatewayAutoscaling.HorizontalAutoscaling,
+	}
+
+	return newHorizontalPodAutoscaler(b)
 }
 
 // NewIngesterHorizontalPodAutoscaler creates a k8s autoscaler for the ingester stateful set
 func NewIngesterHorizontalPodAutoscaler(opts Options) *autoscalingv2beta2.HorizontalPodAutoscaler {
-	labels := ComponentLabels(LabelIngesterComponent, opts.Name)
-	name := horizontalAutoscalerName(LabelIngesterComponent)
-	replicas := opts.Stack.Template.Ingester.Replicas
+	b := autoscalerBuilder{
+		name:      horizontalAutoscalerName(LabelIngesterComponent),
+		namespace: opts.Namespace,
+		labelSet:  ComponentLabels(LabelIngesterComponent, opts.Name),
+		objectRef: newStatefulSetCrossVersionObjectReference(IngesterName(opts.Name)),
+		min:       internal.StackSizeTable[smallestSize].Template.Ingester.Replicas,
+		max:       internal.StackSizeTable[largestSize].Template.Ingester.Replicas,
+		config:    opts.Stack.Autoscaling.IngestionAutoscaling.HorizontalAutoscaling,
+	}
 
-	return newHorizontalPodAutoscaler(name, opts.Namespace, "StatefulSet", IngesterName(opts.Name), labels, replicas)
+	return newHorizontalPodAutoscaler(b)
 }
 
-// NewQuerierHorizontalPodAutoscaler creates a k8s autoscaler for the querier deployment set
-func NewQuerierHorizontalPodAutoscaler(opts Options) *autoscalingv2beta2.HorizontalPodAutoscaler {
-	labels := ComponentLabels(LabelQuerierComponent, opts.Name)
-	name := horizontalAutoscalerName(LabelQuerierComponent)
-	replicas := opts.Stack.Template.Querier.Replicas
+// NewIndexGatewayHorizontalPodAutoscaler creates a k8s autoscaler for the index gateway stateful set
+func NewIndexGatewayHorizontalPodAutoscaler(opts Options) *autoscalingv2beta2.HorizontalPodAutoscaler {
+	b := autoscalerBuilder{
+		name:      horizontalAutoscalerName(LabelIndexGatewayComponent),
+		namespace: opts.Namespace,
+		labelSet:  ComponentLabels(LabelIndexGatewayComponent, opts.Name),
+		objectRef: newStatefulSetCrossVersionObjectReference(IndexGatewayName(opts.Name)),
+		min:       internal.StackSizeTable[smallestSize].Template.IndexGateway.Replicas,
+		max:       internal.StackSizeTable[largestSize].Template.IndexGateway.Replicas,
+		config:    opts.Stack.Autoscaling.QueryAutoscaling.HorizontalAutoscaling,
+	}
 
-	return newHorizontalPodAutoscaler(name, opts.Namespace, "Deployment", QuerierName(opts.Name), labels, replicas)
+	return newHorizontalPodAutoscaler(b)
 }
 
-func newHorizontalPodAutoscaler(name, namespace, targetKind, targetName string, labels labels.Set, replicas int32) *autoscalingv2beta2.HorizontalPodAutoscaler {
+func policyPtr(p autoscalingv2beta2.ScalingPolicySelect) *autoscalingv2beta2.ScalingPolicySelect {
+	return &p
+}
+
+func newDeploymentCrossVersionObjectReference(name string) autoscalingv2beta2.CrossVersionObjectReference {
+	return autoscalingv2beta2.CrossVersionObjectReference{
+		Kind:       "Deployment",
+		Name:       name,
+		APIVersion: appsv1.SchemeGroupVersion.String(),
+	}
+}
+
+func newStatefulSetCrossVersionObjectReference(name string) autoscalingv2beta2.CrossVersionObjectReference {
+	return autoscalingv2beta2.CrossVersionObjectReference{
+		Kind:       "StatefulSet",
+		Name:       name,
+		APIVersion: appsv1.SchemeGroupVersion.String(),
+	}
+}
+
+func newHorizontalPodAutoscaler(b autoscalerBuilder) *autoscalingv2beta2.HorizontalPodAutoscaler {
 	return &autoscalingv2beta2.HorizontalPodAutoscaler{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "HorizontalPodAutoscaler",
 			APIVersion: autoscalingv2beta2.SchemeGroupVersion.String(),
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-			Labels:    labels,
+			Name:      b.name,
+			Namespace: b.namespace,
+			Labels:    b.labelSet,
 		},
 		Spec: autoscalingv2beta2.HorizontalPodAutoscalerSpec{
-			ScaleTargetRef: autoscalingv2beta2.CrossVersionObjectReference{
-				Kind:       targetKind,
-				Name:       targetName,
-				APIVersion: appsv1.SchemeGroupVersion.String(),
-			},
-			MinReplicas: pointer.Int32Ptr(replicas),
-			MaxReplicas: replicas * 4,
+			ScaleTargetRef: b.objectRef,
+			MinReplicas:    pointer.Int32Ptr(b.min),
+			MaxReplicas:    b.max,
 			Behavior: &autoscalingv2beta2.HorizontalPodAutoscalerBehavior{
 				ScaleDown: &autoscalingv2beta2.HPAScalingRules{
 					Policies: []autoscalingv2beta2.HPAScalingPolicy{
 						{
 							Type:          autoscalingv2beta2.PercentScalingPolicy,
-							Value:         50,
-							PeriodSeconds: 60,
-						},
-						{
-							Type:          autoscalingv2beta2.PodsScalingPolicy,
-							Value:         3,
+							Value:         b.config.ScaleDownPercentage,
 							PeriodSeconds: 60,
 						},
 					},
@@ -76,17 +190,12 @@ func newHorizontalPodAutoscaler(name, namespace, targetKind, targetName string, 
 					Policies: []autoscalingv2beta2.HPAScalingPolicy{
 						{
 							Type:          autoscalingv2beta2.PercentScalingPolicy,
-							Value:         100,
-							PeriodSeconds: 15,
-						},
-						{
-							Type:          autoscalingv2beta2.PodsScalingPolicy,
-							Value:         3,
+							Value:         b.config.ScaleUpPercentage,
 							PeriodSeconds: 15,
 						},
 					},
 					SelectPolicy:               policyPtr(autoscalingv2beta2.MaxPolicySelect),
-					StabilizationWindowSeconds: pointer.Int32Ptr(0),
+					StabilizationWindowSeconds: pointer.Int32Ptr(30),
 				},
 			},
 			Metrics: []autoscalingv2beta2.MetricSpec{
@@ -103,8 +212,4 @@ func newHorizontalPodAutoscaler(name, namespace, targetKind, targetName string, 
 			},
 		},
 	}
-}
-
-func policyPtr(p autoscalingv2beta2.ScalingPolicySelect) *autoscalingv2beta2.ScalingPolicySelect {
-	return &p
 }

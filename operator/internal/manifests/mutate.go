@@ -203,5 +203,7 @@ func mutatePrometheusRule(existing, desired *monitoringv1.PrometheusRule) {
 }
 
 func mutateHorizontalPodAutoscaler(existing, desired *autoscalingv2beta2.HorizontalPodAutoscaler) {
-	// TODO: Implement
+	existing.Annotations = desired.Annotations
+	existing.Labels = desired.Labels
+	existing.Spec = desired.Spec
 }

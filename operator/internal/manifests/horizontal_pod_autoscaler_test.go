@@ -7,7 +7,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
 
-	lokiv1beta1 "github.com/grafana/loki-operator/api/v1beta1"
+	lokiv1beta1 "github.com/grafana/loki/operator/api/v1beta1"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -52,6 +52,20 @@ func TestStatefulSetHorizontalPodAutoscalerMatchName(t *testing.T) {
 					Replicas: 1,
 				},
 			},
+			Autoscaling: &lokiv1beta1.AutoscalingTemplateSpec{
+				IngestionAutoscaling: &lokiv1beta1.AutoscalingSpec{
+					HorizontalAutoscaling: &lokiv1beta1.HorizontalAutoscalingSpec{
+						ScaleUpPercentage:   1,
+						ScaleDownPercentage: 1,
+					},
+				},
+				QueryAutoscaling: &lokiv1beta1.AutoscalingSpec{
+					HorizontalAutoscaling: &lokiv1beta1.HorizontalAutoscalingSpec{
+						ScaleUpPercentage:   1,
+						ScaleDownPercentage: 1,
+					},
+				},
+			},
 		},
 	}
 
@@ -59,6 +73,10 @@ func TestStatefulSetHorizontalPodAutoscalerMatchName(t *testing.T) {
 		{
 			StatefulSet: NewIngesterStatefulSet(opt),
 			Autoscaler:  NewIngesterHorizontalPodAutoscaler(opt),
+		},
+		{
+			StatefulSet: NewIndexGatewayStatefulSet(opt),
+			Autoscaler:  NewIndexGatewayHorizontalPodAutoscaler(opt),
 		},
 	}
 
@@ -78,8 +96,11 @@ func TestDeploymentHorizontalPodAutoscalerMatchName(t *testing.T) {
 		Autoscaler *autoscalingv2beta2.HorizontalPodAutoscaler
 	}
 
+	sha1C := "deadbeef"
+
 	flags := FeatureFlags{
 		EnableHorizontalAutoscaling: true,
+		EnableGateway:               true,
 	}
 
 	opt := Options{
@@ -112,6 +133,26 @@ func TestDeploymentHorizontalPodAutoscalerMatchName(t *testing.T) {
 					Replicas: 1,
 				},
 			},
+			Autoscaling: &lokiv1beta1.AutoscalingTemplateSpec{
+				IngestionAutoscaling: &lokiv1beta1.AutoscalingSpec{
+					HorizontalAutoscaling: &lokiv1beta1.HorizontalAutoscalingSpec{
+						ScaleUpPercentage:   1,
+						ScaleDownPercentage: 1,
+					},
+				},
+				QueryAutoscaling: &lokiv1beta1.AutoscalingSpec{
+					HorizontalAutoscaling: &lokiv1beta1.HorizontalAutoscalingSpec{
+						ScaleUpPercentage:   1,
+						ScaleDownPercentage: 1,
+					},
+				},
+				GatewayAutoscaling: &lokiv1beta1.AutoscalingSpec{
+					HorizontalAutoscaling: &lokiv1beta1.HorizontalAutoscalingSpec{
+						ScaleUpPercentage:   1,
+						ScaleDownPercentage: 1,
+					},
+				},
+			},
 		},
 	}
 
@@ -119,6 +160,18 @@ func TestDeploymentHorizontalPodAutoscalerMatchName(t *testing.T) {
 		{
 			Deployment: NewQuerierDeployment(opt),
 			Autoscaler: NewQuerierHorizontalPodAutoscaler(opt),
+		},
+		{
+			Deployment: NewQueryFrontendDeployment(opt),
+			Autoscaler: NewQueryFrontendHorizontalPodAutoscaler(opt),
+		},
+		{
+			Deployment: NewDistributorDeployment(opt),
+			Autoscaler: NewDistributorHorizontalPodAutoscaler(opt),
+		},
+		{
+			Deployment: NewGatewayDeployment(opt, sha1C),
+			Autoscaler: NewGatewayHorizontalPodAutoscaler(opt),
 		},
 	}
 

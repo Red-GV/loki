@@ -38,6 +38,10 @@ func BuildGateway(opts Options) ([]client.Object, error) {
 		return nil, err
 	}
 
+	if opts.Flags.EnableHorizontalAutoscaling {
+		dpl.Spec.Replicas = nil
+	}
+
 	objs := []client.Object{cm, dpl, svc, ing}
 
 	if opts.Flags.EnableTLSServiceMonitorConfig {

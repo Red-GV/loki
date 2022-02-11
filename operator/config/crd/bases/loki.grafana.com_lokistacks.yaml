@@ -34,6 +34,79 @@ spec:
           spec:
             description: LokiStackSpec defines the desired state of LokiStack
             properties:
+              autoscaling:
+                description: Autoscaling defines the autoscaling configurations to apply per log path.
+                properties:
+                  gatewayAutoscaling:
+                    description: IngestionAutoscaling defines the autoscaling configuration applied to the gateway.
+                    properties:
+                      horizontalAutoscaling:
+                        description: HorizontalAutoscaling defines the autoscaling configuration applied to automatically change the number of pods deployed.
+                        properties:
+                          scaleDownPercentage:
+                            description: ScaleDownPercentage defines the percentage of running pods to add to the cluster for the scale down behavior.
+                            format: int32
+                            maximum: 100
+                            minimum: 0
+                            type: integer
+                          scaleUpPercentage:
+                            description: ScaleUpPercentage defines the percentage of running pods to add to the cluster for the scale up behavior.
+                            format: int32
+                            maximum: 100
+                            minimum: 0
+                            type: integer
+                        required:
+                        - scaleDownPercentage
+                        - scaleUpPercentage
+                        type: object
+                    type: object
+                  ingestionAutoscaling:
+                    description: IngestionAutoscaling defines the autoscaling configuration applied to the ingestion path.
+                    properties:
+                      horizontalAutoscaling:
+                        description: HorizontalAutoscaling defines the autoscaling configuration applied to automatically change the number of pods deployed.
+                        properties:
+                          scaleDownPercentage:
+                            description: ScaleDownPercentage defines the percentage of running pods to add to the cluster for the scale down behavior.
+                            format: int32
+                            maximum: 100
+                            minimum: 0
+                            type: integer
+                          scaleUpPercentage:
+                            description: ScaleUpPercentage defines the percentage of running pods to add to the cluster for the scale up behavior.
+                            format: int32
+                            maximum: 100
+                            minimum: 0
+                            type: integer
+                        required:
+                        - scaleDownPercentage
+                        - scaleUpPercentage
+                        type: object
+                    type: object
+                  queryAutoscaling:
+                    description: QueryAutoscaling defines the autoscaling configuration applied to the query path.
+                    properties:
+                      horizontalAutoscaling:
+                        description: HorizontalAutoscaling defines the autoscaling configuration applied to automatically change the number of pods deployed.
+                        properties:
+                          scaleDownPercentage:
+                            description: ScaleDownPercentage defines the percentage of running pods to add to the cluster for the scale down behavior.
+                            format: int32
+                            maximum: 100
+                            minimum: 0
+                            type: integer
+                          scaleUpPercentage:
+                            description: ScaleUpPercentage defines the percentage of running pods to add to the cluster for the scale up behavior.
+                            format: int32
+                            maximum: 100
+                            minimum: 0
+                            type: integer
+                        required:
+                        - scaleDownPercentage
+                        - scaleUpPercentage
+                        type: object
+                    type: object
+                type: object
               limits:
                 description: Limits defines the limits to be applied to log stream processing.
                 properties:

@@ -23,6 +23,10 @@ func BuildQueryFrontend(opts Options) ([]client.Object, error) {
 		}
 	}
 
+	if opts.Flags.EnableHorizontalAutoscaling {
+		deployment.Spec.Replicas = nil
+	}
+
 	return []client.Object{
 		deployment,
 		NewQueryFrontendGRPCService(opts),

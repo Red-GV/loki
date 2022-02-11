@@ -228,6 +228,26 @@ var StackSizeTable = map[lokiv1beta1.LokiStackSizeType]lokiv1beta1.LokiStackSpec
 				Replicas: 1,
 			},
 		},
+		Autoscaling: &lokiv1beta1.AutoscalingTemplateSpec{
+			IngestionAutoscaling: &lokiv1beta1.AutoscalingSpec{
+				HorizontalAutoscaling: &lokiv1beta1.HorizontalAutoscalingSpec{
+					ScaleUpPercentage:   50,
+					ScaleDownPercentage: 100,
+				},
+			},
+			QueryAutoscaling: &lokiv1beta1.AutoscalingSpec{
+				HorizontalAutoscaling: &lokiv1beta1.HorizontalAutoscalingSpec{
+					ScaleUpPercentage:   25,
+					ScaleDownPercentage: 100,
+				},
+			},
+			GatewayAutoscaling: &lokiv1beta1.AutoscalingSpec{
+				HorizontalAutoscaling: &lokiv1beta1.HorizontalAutoscalingSpec{
+					ScaleUpPercentage:   1,
+					ScaleDownPercentage: 1,
+				},
+			},
+		},
 	},
 
 	lokiv1beta1.SizeOneXSmall: {
@@ -277,6 +297,26 @@ var StackSizeTable = map[lokiv1beta1.LokiStackSizeType]lokiv1beta1.LokiStackSpec
 				Replicas: 2,
 			},
 		},
+		Autoscaling: &lokiv1beta1.AutoscalingTemplateSpec{
+			IngestionAutoscaling: &lokiv1beta1.AutoscalingSpec{
+				HorizontalAutoscaling: &lokiv1beta1.HorizontalAutoscalingSpec{
+					ScaleUpPercentage:   100,
+					ScaleDownPercentage: 50,
+				},
+			},
+			QueryAutoscaling: &lokiv1beta1.AutoscalingSpec{
+				HorizontalAutoscaling: &lokiv1beta1.HorizontalAutoscalingSpec{
+					ScaleUpPercentage:   100,
+					ScaleDownPercentage: 50,
+				},
+			},
+			GatewayAutoscaling: &lokiv1beta1.AutoscalingSpec{
+				HorizontalAutoscaling: &lokiv1beta1.HorizontalAutoscalingSpec{
+					ScaleUpPercentage:   1,
+					ScaleDownPercentage: 1,
+				},
+			},
+		},
 	},
 
 	lokiv1beta1.SizeOneXMedium: {
@@ -324,6 +364,26 @@ var StackSizeTable = map[lokiv1beta1.LokiStackSizeType]lokiv1beta1.LokiStackSpec
 			},
 			IndexGateway: &lokiv1beta1.LokiComponentSpec{
 				Replicas: 2,
+			},
+		},
+		Autoscaling: &lokiv1beta1.AutoscalingTemplateSpec{
+			IngestionAutoscaling: &lokiv1beta1.AutoscalingSpec{
+				HorizontalAutoscaling: &lokiv1beta1.HorizontalAutoscalingSpec{
+					ScaleUpPercentage:   100,
+					ScaleDownPercentage: 50,
+				},
+			},
+			QueryAutoscaling: &lokiv1beta1.AutoscalingSpec{
+				HorizontalAutoscaling: &lokiv1beta1.HorizontalAutoscalingSpec{
+					ScaleUpPercentage:   100,
+					ScaleDownPercentage: 50,
+				},
+			},
+			GatewayAutoscaling: &lokiv1beta1.AutoscalingSpec{
+				HorizontalAutoscaling: &lokiv1beta1.HorizontalAutoscalingSpec{
+					ScaleUpPercentage:   1,
+					ScaleDownPercentage: 1,
+				},
 			},
 		},
 	},

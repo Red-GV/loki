@@ -63,6 +63,72 @@ spec:
         name: ""
         version: v1
       specDescriptors:
+      - description: Autoscaling defines the autoscaling configurations to apply per
+          log path.
+        displayName: Autoscaling
+        path: autoscaling
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:advanced
+      - description: IngestionAutoscaling defines the autoscaling configuration applied
+          to the gateway.
+        displayName: GatewayAutoscaling
+        path: autoscaling.gatewayAutoscaling
+      - description: HorizontalAutoscaling defines the autoscaling configuration applied
+          to automatically change the number of pods deployed.
+        displayName: HorizontalAutoscaling
+        path: autoscaling.gatewayAutoscaling.horizontalAutoscaling
+      - description: ScaleDownPercentage defines the percentage of running pods to
+          add to the cluster for the scale down behavior.
+        displayName: ScaleDownPercentage
+        path: autoscaling.gatewayAutoscaling.horizontalAutoscaling.scaleDownPercentage
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:number
+      - description: ScaleUpPercentage defines the percentage of running pods to add
+          to the cluster for the scale up behavior.
+        displayName: ScaleUpPercentage
+        path: autoscaling.gatewayAutoscaling.horizontalAutoscaling.scaleUpPercentage
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:number
+      - description: IngestionAutoscaling defines the autoscaling configuration applied
+          to the ingestion path.
+        displayName: IngestionAutoscaling
+        path: autoscaling.ingestionAutoscaling
+      - description: HorizontalAutoscaling defines the autoscaling configuration applied
+          to automatically change the number of pods deployed.
+        displayName: HorizontalAutoscaling
+        path: autoscaling.ingestionAutoscaling.horizontalAutoscaling
+      - description: ScaleDownPercentage defines the percentage of running pods to
+          add to the cluster for the scale down behavior.
+        displayName: ScaleDownPercentage
+        path: autoscaling.ingestionAutoscaling.horizontalAutoscaling.scaleDownPercentage
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:number
+      - description: ScaleUpPercentage defines the percentage of running pods to add
+          to the cluster for the scale up behavior.
+        displayName: ScaleUpPercentage
+        path: autoscaling.ingestionAutoscaling.horizontalAutoscaling.scaleUpPercentage
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:number
+      - description: QueryAutoscaling defines the autoscaling configuration applied
+          to the query path.
+        displayName: QueryAutoscaling
+        path: autoscaling.queryAutoscaling
+      - description: HorizontalAutoscaling defines the autoscaling configuration applied
+          to automatically change the number of pods deployed.
+        displayName: HorizontalAutoscaling
+        path: autoscaling.queryAutoscaling.horizontalAutoscaling
+      - description: ScaleDownPercentage defines the percentage of running pods to
+          add to the cluster for the scale down behavior.
+        displayName: ScaleDownPercentage
+        path: autoscaling.queryAutoscaling.horizontalAutoscaling.scaleDownPercentage
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:number
+      - description: ScaleUpPercentage defines the percentage of running pods to add
+          to the cluster for the scale up behavior.
+        displayName: ScaleUpPercentage
+        path: autoscaling.queryAutoscaling.horizontalAutoscaling.scaleUpPercentage
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:number
       - description: Limits defines the limits to be applied to log stream processing.
         displayName: Rate Limiting
         path: limits
