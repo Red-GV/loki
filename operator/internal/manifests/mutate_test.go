@@ -976,7 +976,7 @@ func TestGetMutateFunc_MutateHorizontalPodAutoscalerSpec(t *testing.T) {
 							PeriodSeconds: 15,
 						},
 						{
-							Type:          autoscalingv2beta2.PodScalingPolicy,
+							Type:          autoscalingv2beta2.PodsScalingPolicy,
 							Value:         4,
 							PeriodSeconds: 15,
 						},
@@ -1033,7 +1033,7 @@ func TestGetMutateFunc_MutateHorizontalPodAutoscalerSpec(t *testing.T) {
 							PeriodSeconds: 15,
 						},
 						{
-							Type:          autoscalingv2beta2.PodScalingPolicy,
+							Type:          autoscalingv2beta2.PodsScalingPolicy,
 							Value:         4,
 							PeriodSeconds: 15,
 						},

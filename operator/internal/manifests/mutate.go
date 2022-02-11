@@ -145,6 +145,12 @@ func mutateDeployment(existing, desired *appsv1.Deployment) {
 	if existing.CreationTimestamp.IsZero() {
 		mergeWithOverride(existing.Spec.Selector, desired.Spec.Selector)
 	}
+	// Replicas are not set when a horizontal pod autoscaler is in use.
+	// If the value is nil, then the intended manager of the replicas
+	// will be the HPA.
+	if desired.Spec.Replicas != nil {
+		existing.Spec.Replicas = desired.Spec.Replicas
+	}
 	existing.Spec.Replicas = desired.Spec.Replicas
 	mergeWithOverride(&existing.Spec.Template, desired.Spec.Template)
 	mergeWithOverride(&existing.Spec.Strategy, desired.Spec.Strategy)
@@ -156,8 +162,13 @@ func mutateStatefulSet(existing, desired *appsv1.StatefulSet) {
 	if existing.CreationTimestamp.IsZero() {
 		existing.Spec.Selector = desired.Spec.Selector
 	}
+	// Replicas are not set when a horizontal pod autoscaler is in use.
+	// If the value is nil, then the intended manager of the replicas
+	// will be the HPA.
+	if desired.Spec.Replicas != nil {
+		existing.Spec.Replicas = desired.Spec.Replicas
+	}
 	existing.Spec.PodManagementPolicy = desired.Spec.PodManagementPolicy
-	existing.Spec.Replicas = desired.Spec.Replicas
 	mergeWithOverride(&existing.Spec.Template, desired.Spec.Template)
 	for i := range existing.Spec.VolumeClaimTemplates {
 		existing.Spec.VolumeClaimTemplates[i].TypeMeta = desired.Spec.VolumeClaimTemplates[i].TypeMeta
