@@ -480,6 +480,16 @@ spec:
           - update
           - watch
         - apiGroups:
+          - autoscaling
+          resources:
+          - horizontalpodautoscalers
+          verbs:
+          - create
+          - get
+          - list
+          - update
+          - watch
+        - apiGroups:
           - config.openshift.io
           resources:
           - dnses
@@ -609,6 +619,7 @@ spec:
                 - --with-service-monitors
                 - --with-tls-service-monitors
                 - --with-prometheus-alerts
+                - --with-horizontal-autoscaling
                 command:
                 - /manager
                 env:

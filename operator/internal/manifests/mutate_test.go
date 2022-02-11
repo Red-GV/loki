@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	appsv1 "k8s.io/api/apps/v1"
+	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
@@ -936,4 +937,127 @@ func TestGetMutateFunc_MutateRoute(t *testing.T) {
 	require.Exactly(t, got.Labels, want.Labels)
 	require.Exactly(t, got.Annotations, want.Annotations)
 	require.Exactly(t, got.Spec, want.Spec)
+}
+
+func TestGetMutateFunc_MutateHorizontalPodAutoscalerSpec(t *testing.T) {
+	policy := autoscalingv2beta2.MinPolicySelect
+
+	got := &autoscalingv2beta2.HorizontalPodAutoscaler{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "test-autoscaler",
+			Labels: map[string]string{
+				"test": "test",
+			},
+		},
+		Spec: autoscalingv2beta2.HorizontalPodAutoscalerSpec{
+			ScaleTargetRef: autoscalingv2beta2.CrossVersionObjectReference{
+				Kind:       "StatefulSet",
+				Name:       "test",
+				APIVersion: appsv1.SchemeGroupVersion.String(),
+			},
+			MinReplicas: pointer.Int32Ptr(2),
+			MaxReplicas: 10,
+			Behavior: &autoscalingv2beta2.HorizontalPodAutoscalerBehavior{
+				ScaleDown: &autoscalingv2beta2.HPAScalingRules{
+					Policies: []autoscalingv2beta2.HPAScalingPolicy{
+						{
+							Type:          "Percent",
+							Value:         20,
+							PeriodSeconds: 60,
+						},
+					},
+					StabilizationWindowSeconds: pointer.Int32Ptr(300),
+				},
+				ScaleUp: &autoscalingv2beta2.HPAScalingRules{
+					Policies: []autoscalingv2beta2.HPAScalingPolicy{
+						{
+							Type:          "Percent",
+							Value:         100,
+							PeriodSeconds: 15,
+						},
+						{
+							Type:          "Pods",
+							Value:         4,
+							PeriodSeconds: 15,
+						},
+					},
+					SelectPolicy:               &policy,
+					StabilizationWindowSeconds: pointer.Int32Ptr(0),
+				},
+			},
+			Metrics: []autoscalingv2beta2.MetricSpec{
+				{
+					Type: "Resource",
+					Resource: &autoscalingv2beta2.ResourceMetricSource{
+						Name: "Memory",
+						Target: autoscalingv2beta2.MetricTarget{
+							Type:               "Utilization",
+							AverageUtilization: pointer.Int32Ptr(80),
+						},
+					},
+				},
+			},
+		},
+	}
+	want := &autoscalingv2beta2.HorizontalPodAutoscaler{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "test-autoscaler",
+			Labels: map[string]string{
+				"test": "test",
+			},
+		},
+		Spec: autoscalingv2beta2.HorizontalPodAutoscalerSpec{
+			ScaleTargetRef: autoscalingv2beta2.CrossVersionObjectReference{
+				Kind:       "StatefulSet",
+				Name:       "test",
+				APIVersion: appsv1.SchemeGroupVersion.String(),
+			},
+			MinReplicas: pointer.Int32Ptr(2),
+			MaxReplicas: 10,
+			Behavior: &autoscalingv2beta2.HorizontalPodAutoscalerBehavior{
+				ScaleDown: &autoscalingv2beta2.HPAScalingRules{
+					Policies: []autoscalingv2beta2.HPAScalingPolicy{
+						{
+							Type:          "Percent",
+							Value:         20,
+							PeriodSeconds: 60,
+						},
+					},
+					StabilizationWindowSeconds: pointer.Int32Ptr(300),
+				},
+				ScaleUp: &autoscalingv2beta2.HPAScalingRules{
+					Policies: []autoscalingv2beta2.HPAScalingPolicy{
+						{
+							Type:          "Percent",
+							Value:         100,
+							PeriodSeconds: 15,
+						},
+						{
+							Type:          "Pods",
+							Value:         4,
+							PeriodSeconds: 15,
+						},
+					},
+					SelectPolicy:               &policy,
+					StabilizationWindowSeconds: pointer.Int32Ptr(0),
+				},
+			},
+			Metrics: []autoscalingv2beta2.MetricSpec{
+				{
+					Type: "Resource",
+					Resource: &autoscalingv2beta2.ResourceMetricSource{
+						Name: "Memory",
+						Target: autoscalingv2beta2.MetricTarget{
+							Type:               "Utilization",
+							AverageUtilization: pointer.Int32Ptr(80),
+						},
+					},
+				},
+			},
+		},
+	}
+
+	f := manifests.MutateFuncFor(got, want)
+	err := f()
+	require.NoError(t, err)
 }

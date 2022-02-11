@@ -78,6 +78,10 @@ func BuildAll(opts Options) ([]client.Object, error) {
 		}
 		res = append(res, prometheusRuleObjs...)
 	}
+	
+	if opts.Flags.EnableHorizontalAutoscaling {
+		res = append(res, BuildHorizontalPodAutoscalers(opts)...)
+	}
 
 	return res, nil
 }

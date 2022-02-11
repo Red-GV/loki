@@ -49,6 +49,7 @@ func main() {
 		enableGateway            bool
 		enableGatewayRoute       bool
 		enablePrometheusAlerts   bool
+		enableHorizontalAutoscaling bool
 	)
 
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
@@ -66,6 +67,8 @@ func main() {
 	flag.BoolVar(&enableGatewayRoute, "with-lokistack-gateway-route", false,
 		"Enables the usage of Route for the lokistack-gateway instead of Ingress (OCP Only!)")
 	flag.BoolVar(&enablePrometheusAlerts, "with-prometheus-alerts", false, "Enables prometheus alerts")
+	flag.BoolVar(&enableHorizontalAutoscaling, "with-horizontal-autoscaling", false,
+		"Enables the usage of the Kubernetes Horizontal Autoscaler for the read and write path.")
 	flag.Parse()
 
 	log.Init("loki-operator")
@@ -108,6 +111,7 @@ func main() {
 		EnablePrometheusAlerts:          enablePrometheusAlerts,
 		EnableGateway:                   enableGateway,
 		EnableGatewayRoute:              enableGatewayRoute,
+		EnableHorizontalAutoscaling:     enableHorizontalAutoscaling,
 	}
 
 	if err = (&controllers.LokiStackReconciler{

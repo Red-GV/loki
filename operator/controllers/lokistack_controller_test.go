@@ -14,6 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	appsv1 "k8s.io/api/apps/v1"
+	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
@@ -132,6 +133,14 @@ func TestLokiStackController_RegisterOwnedResourcesForUpdateOrDeleteOnly(t *test
 			},
 			pred: updateOrDeleteOnlyPred,
 		},
+		{
+			obj:   &autoscalingv2beta2.HorizontalPodAutoscaler{},
+			index: 8,
+			flags: manifests.FeatureFlags{
+				EnableHorizontalAutoscaling: true,
+			},
+			pred: updateOrDeleteOnlyPred,
+		},
 	}
 	for _, tst := range table {
 		b := &k8sfakes.FakeBuilder{}
@@ -142,8 +151,12 @@ func TestLokiStackController_RegisterOwnedResourcesForUpdateOrDeleteOnly(t *test
 		err := c.buildController(b)
 		require.NoError(t, err)
 
+		ownCount := 8
+		if tst.flags.EnableHorizontalAutoscaling {
+			ownCount++
+		}
 		// Require Owns-Calls for all owned resources
-		require.Equal(t, 8, b.OwnsCallCount())
+		require.Equal(t, ownCount, b.OwnsCallCount())
 
 		// Require Owns-call options to have delete predicate only
 		obj, opts := b.OwnsArgsForCall(tst.index)

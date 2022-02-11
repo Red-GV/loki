@@ -205,6 +205,10 @@ func signingServiceSecretName(serviceName string) string {
 	return fmt.Sprintf("%s-metrics", serviceName)
 }
 
+func horizontalAutoscalerName(componentName string) string {
+	return fmt.Sprintf("lokistack-horizontal-autoscaler-%s", componentName)
+}
+
 func fqdn(serviceName, namespace string) string {
 	return fmt.Sprintf("%s.%s.svc.cluster.local", serviceName, namespace)
 }

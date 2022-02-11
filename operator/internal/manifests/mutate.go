@@ -10,6 +10,7 @@ import (
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 
 	appsv1 "k8s.io/api/apps/v1"
+	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
@@ -90,6 +91,11 @@ func MutateFuncFor(existing, desired client.Object) controllerutil.MutateFn {
 			pr := existing.(*monitoringv1.PrometheusRule)
 			wantPr := desired.(*monitoringv1.PrometheusRule)
 			mutatePrometheusRule(pr, wantPr)
+			
+		case *autoscalingv2beta2.HorizontalPodAutoscaler:
+			rt := existing.(*autoscalingv2beta2.HorizontalPodAutoscaler)
+			wantRt := desired.(*autoscalingv2beta2.HorizontalPodAutoscaler)
+			mutateHorizontalPodAutoscaler(rt, wantRt)
 
 		default:
 			t := reflect.TypeOf(existing).String()
@@ -183,4 +189,8 @@ func mutatePrometheusRule(existing, desired *monitoringv1.PrometheusRule) {
 	existing.Annotations = desired.Annotations
 	existing.Labels = desired.Labels
 	existing.Spec = desired.Spec
+}
+
+func mutateHorizontalPodAutoscaler(existing, desired *autoscalingv2beta2.HorizontalPodAutoscaler) {
+	// TODO: Implement
 }

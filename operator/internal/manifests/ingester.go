@@ -24,6 +24,10 @@ func BuildIngester(opts Options) ([]client.Object, error) {
 		}
 	}
 
+	if opts.Flags.EnableHorizontalAutoscaling {
+		statefulSet.Spec.Replicas = nil
+	}
+
 	return []client.Object{
 		statefulSet,
 		NewIngesterGRPCService(opts),

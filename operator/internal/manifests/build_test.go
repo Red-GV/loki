@@ -333,6 +333,66 @@ func TestBuildAll_WithFeatureFlags_EnablePrometheusAlerts(t *testing.T) {
 	}
 }
 
+func TestBuildAll_WithFeatureFlags_EnableHorizontalPodAutoscalers(t *testing.T) {
+	type test struct {
+		desc            string
+		AutoscalerCount int
+		BuildOptions    Options
+	}
+
+	table := []test{
+		{
+			desc:            "no horizontal autoscalers created",
+			AutoscalerCount: 0,
+			BuildOptions: Options{
+				Name:      "test",
+				Namespace: "test",
+				Stack: lokiv1beta1.LokiStackSpec{
+					Size: lokiv1beta1.SizeOneXSmall,
+				},
+				Flags: FeatureFlags{
+					EnableCertificateSigningService: false,
+					EnableServiceMonitors:           false,
+					EnableTLSServiceMonitorConfig:   false,
+					EnableHorizontalAutoscaling:     false,
+				},
+			},
+		},
+		{
+			desc:            "horizontal autoscalers created",
+			AutoscalerCount: 2,
+			BuildOptions: Options{
+				Name:      "test",
+				Namespace: "test",
+				Stack: lokiv1beta1.LokiStackSpec{
+					Size: lokiv1beta1.SizeOneXSmall,
+				},
+				Flags: FeatureFlags{
+					EnableCertificateSigningService: false,
+					EnableServiceMonitors:           false,
+					EnableTLSServiceMonitorConfig:   false,
+					EnableHorizontalAutoscaling:     true,
+				},
+			},
+		},
+	}
+
+	for _, tst := range table {
+		tst := tst
+		t.Run(tst.desc, func(t *testing.T) {
+			t.Parallel()
+
+			err := ApplyDefaultSettings(&tst.BuildOptions)
+			require.NoError(t, err)
+
+			objects, buildErr := BuildAll(tst.BuildOptions)
+
+			require.NoError(t, buildErr)
+			require.Equal(t, tst.AutoscalerCount, horizontalPodAutoscalerCount(objects))
+		})
+	}
+}
+
 func serviceMonitorCount(objects []client.Object) int {
 	monitors := 0
 	for _, obj := range objects {
@@ -341,6 +401,16 @@ func serviceMonitorCount(objects []client.Object) int {
 		}
 	}
 	return monitors
+}
+
+func horizontalPodAutoscalerCount(objects []client.Object) int {
+	hpa := 0
+	for _, obj := range objects {
+		if obj.GetObjectKind().GroupVersionKind().Kind == "HorizontalPodAutoscaler" {
+			hpa++
+		}
+	}
+	return hpa
 }
 
 func checkGatewayDeployed(objects []client.Object, stackName string) bool {

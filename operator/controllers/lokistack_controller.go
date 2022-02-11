@@ -15,6 +15,7 @@ import (
 	routev1 "github.com/openshift/api/route/v1"
 
 	appsv1 "k8s.io/api/apps/v1"
+	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
@@ -82,6 +83,7 @@ type LokiStackReconciler struct {
 // +kubebuilder:rbac:groups=networking.k8s.io,resources=ingresses,verbs=get;list;watch;create;update
 // +kubebuilder:rbac:groups=config.openshift.io,resources=dnses,verbs=get;list;watch
 // +kubebuilder:rbac:groups=route.openshift.io,resources=routes,verbs=get;list;watch;create;update
+// +kubebuilder:rbac:groups=autoscaling,resources=horizontalpodautoscalers,verbs=get;list;watch;create;update
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -149,6 +151,10 @@ func (r *LokiStackReconciler) buildController(bld k8s.Builder) error {
 		bld = bld.Owns(&routev1.Route{}, updateOrDeleteOnlyPred)
 	} else {
 		bld = bld.Owns(&networkingv1.Ingress{}, updateOrDeleteOnlyPred)
+	}
+
+	if r.Flags.EnableHorizontalAutoscaling {
+		bld = bld.Owns(&autoscalingv2beta2.HorizontalPodAutoscaler{}, updateOrDeleteOnlyPred)
 	}
 
 	return bld.Complete(r)

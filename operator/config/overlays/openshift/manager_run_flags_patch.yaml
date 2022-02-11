@@ -14,3 +14,4 @@ spec:
           - "--with-service-monitors"
           - "--with-tls-service-monitors"
           - "--with-prometheus-alerts"
+          - "--with-horizontal-autoscaling"
